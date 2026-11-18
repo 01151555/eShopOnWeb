@@ -1,15 +1,20 @@
 name: eShopOnWeb Build and Test
 
 #Triggers (uncomment line below to use it)
-#on: [push, workflow_dispatch]
+on: workflow_dispatch
 
 #Environment variables https://docs.github.com/en/actions/learn-github-actions/environment-variables
 env:
-  RESOURCE-GROUP: rg-eshoponweb-NAME
-  LOCATION: westeurope
+  RESOURCE-GROUP: rg-eshoponweb-germanywestcentral
+  LOCATION: germanywestcentral
   TEMPLATE-FILE: infra/webapp.bicep
-  SUBSCRIPTION-ID: YOUR-SUBS-ID
-  WEBAPP-NAME: eshoponweb-webapp-NAME
+  SUBSCRIPTION-ID: 96e54c96-f5f1-41d4-b18d-eb77fa80d818
+  WEBAPP-NAME: devops-webapp-gwc-74211185
+
+# OIDC login with a user-assigned managed identity (app registration is blocked in the PW tenant)
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   #Build, test and publish .net web project in repository
@@ -69,11 +74,13 @@ jobs:
           name: bicep-template
           path: bicep-template
 
-      #Login in your azure subscription using a service principal (credentials stored as GitHub Secret in repo)
+      #Login to Azure with OIDC (federated credential on managed identity id-github-eshoponweb)
       - name: Azure Login
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: 362076f6-2596-4ef7-aa4e-82982fd23b20
+          tenant-id: 3b50229c-cd78-4588-9bcf-97b7629e2f0f
+          subscription-id: ${{ env.SUBSCRIPTION-ID }}
 
       # Deploy Azure WebApp using Bicep file
       - name: deploy
@@ -84,16 +91,6 @@ jobs:
           template: bicep-template/webapp.bicep
           parameters: "webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}"
           failOnStdErr: false
-
-      # Publish website to Azure App Service (WebApp)
-      # Step disabled due to issue where the site sometimes can't be found: https://github.com/microsoft/pipelines-appservice-lib/issues/56. Instead deploy using CLI
-      - name: Publish Website to WebApp
-        if: false #Disable step due to comment above
-        uses: Azure/webapps-deploy@v3
-        with:
-          type: ZIP
-          app-name: ${{ env.WEBAPP-NAME  }}
-          package: .net-app/app.zip
 
       # Publish website to Azure App Service using CLI (WebApp)
       - name: Publish Website to WebApp
