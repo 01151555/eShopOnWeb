@@ -5,11 +5,11 @@ on: workflow_dispatch
 
 #Environment variables https://docs.github.com/en/actions/learn-github-actions/environment-variables
 env:
-  RESOURCE-GROUP: rg-eshoponweb-germanywestcentral
-  LOCATION: germanywestcentral
+  RESOURCE-GROUP: rg-eshoponweb-italynorth
+  LOCATION: italynorth
   TEMPLATE-FILE: infra/webapp.bicep
   SUBSCRIPTION-ID: 96e54c96-f5f1-41d4-b18d-eb77fa80d818
-  WEBAPP-NAME: devops-webapp-gwc-74211185
+  WEBAPP-NAME: devops-webapp-itn-74211185
 
 # OIDC login with a user-assigned managed identity (app registration is blocked in the PW tenant)
 permissions:
